@@ -63,32 +63,40 @@ public final class MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
         // drive model parameters
-        public double inPerTick = 1;
-        public double lateralInPerTick = inPerTick;
-        public double trackWidthTicks = 0;
+        public static final double TICKS_PER_REV = 537.7;
+        public static final double GEAR_RATIO = 1.034;
+        public static final double WHEEL_RADIUS = 1.97; // inches
+        public double inPerTick = (2 * Math.PI * WHEEL_RADIUS * GEAR_RATIO) / TICKS_PER_REV;
+        public double lateralInPerTick = inPerTick * 1.32;
+        public double trackWidthTicks = 12.6 / inPerTick;
 
         // feedforward parameters (in tick units)
-        public double kS = 0;
-        public double kV = 0;
-        public double kA = 0;
+        public double kS = 0.07663;
+        public double kV = 0.016 * inPerTick;
+        public double kA = 0.0018 * inPerTick;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
-        public double minProfileAccel = -30;
-        public double maxProfileAccel = 50;
+        public double minProfileAccel = -100;
+        public double maxProfileAccel = 100;
 
         // turn profile parameters (in radians)
-        public double maxAngVel = Math.PI; // shared with path
-        public double maxAngAccel = Math.PI;
+        public double maxAngVel = 4.2038; // shared with path
+        public double maxAngAccel = Math.toRadians(60);
 
-        // path controller gains
+        // path controller gains for tuning
         public double axialGain = 0.0;
         public double lateralGain = 0.0;
-        public double headingGain = 0.0; // shared with turn
+        public double headingGain = -0.0001; // shared with turn
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
         public double headingVelGain = 0.0; // shared with turn
+
+        // weight constants
+        public static double VX_WEIGHT = 1;
+        public static double VY_WEIGHT = 1;
+        public static double OMEGA_WEIGHT = 1;
     }
 
     public static Params PARAMS = new Params();
