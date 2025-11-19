@@ -27,6 +27,12 @@ android {
     namespace = 'com.qualcomm.ftcrobotcontroller'
 }
 
+repositories {
+    mavenCentral()
+    google()
+    maven { url 'https://jitpack.io' }
+}
+
 dependencies {
     implementation 'com.acmerobotics.dashboard:dashboard:0.5.1'
 }
