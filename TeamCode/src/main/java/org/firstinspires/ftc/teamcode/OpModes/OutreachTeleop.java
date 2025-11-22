@@ -42,25 +42,19 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 /* Scrimmage teleop :)
-* imu/field relative driving is currently disabled hence the commented lines
-* also there is no defined imu in tha hardware map */
+ * imu/field relative driving is currently disabled hence the commented lines
+ * also there is no defined imu in tha hardware map */
 @TeleOp(name = "ScrimmageTeleOp", group = "TeleOp")
 //@Disabled
-public class ScrimmageTeleop extends OpMode {
+public class OutreachTeleop extends OpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
 
     // declaring chassis motors (add more motors/servos later !!)
     private DcMotorEx leftFront, leftBack, rightFront, rightBack, flywheel; // not sure if the flywheel should be a dcmotor but im pretty sure its dcmotorex
     // note for declaration: DcMotor/DcMotorEx, Servo/CRServo (continuous rotation servo)
-    private Servo scoop, ramp;
-    private CRServo intake, transition;
-    public static double POWEROFFSET = 1;
-
-    double intakePow, transitionPow = 0.5;
-    double scoopPos, rampPos = 0.0; // initial position
+    public static double POWEROFFSET = 0.5;
     double flywheelPow;
-    boolean scoopUp = false;
 
 
     // This declares the IMU needed to get the current direction the robot is facing
@@ -78,17 +72,7 @@ public class ScrimmageTeleop extends OpMode {
 
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
 
-        scoop = hardwareMap.get(Servo.class, "scoop");
-        ramp = hardwareMap.get(Servo.class, "ramp");
-
-        intake = hardwareMap.get(CRServo.class, "intake");
-        transition = hardwareMap.get(CRServo.class, "transition");
-
         flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
-
-        // setting them to init position
-        scoop.setPosition(scoopPos);
-        ramp.setPosition(rampPos);
 
         /* // running with encoders (might add later)
         leftFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -114,97 +98,15 @@ public class ScrimmageTeleop extends OpMode {
     // put all teleop code here!! this is called automatically throughout (!!) when the teleop runs
     @Override
     public void loop() {
-        // telemetry.addLine("Press A to reset Yaw");
-        // telemetry.addLine("Hold left bumper to drive in robot relative");
-        // telemetry.addLine("The left joystick sets the robot direction");
-        // telemetry.addLine("Moving the right joystick left and right turns the robot");
-
-        // Y: high position (farther)
-        // B: middle position
-        // A: low position (closer)
-
-
-        /* If you press the A button, then you reset the Yaw to be zero from the way
-        // the robot is currently pointing
-        // (basically saying "oh this is forward")
-        if (gamepad1.a) {
-            imu.resetYaw();
-        }*/
 
         driveTrain();
 
-        /*// If you press the left bumper, you get a drive from the point of view of the robot
-        // (much like driving an RC vehicle)
-        if (gamepad1.left_bumper) {
-            driveTrain();
-        } else {
-            driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
-        }*/
-
-        // add other code here with if statements !!
-        // note for servos: check whether it needs to be 1 or -1!!
-
-        // brings scoop down - BACKUP
-        while (gamepad2.a) {
-            scoopPos = 0.0;
-            scoop.setPosition(scoopPos);
-        }
-
-        // brings scoop UP - BACKUP
-        while (gamepad2.x) {
-            scoopPos = 0.5;
-            scoop.setPosition(scoopPos);
-        }
-
-
-        // OUTTAKE - turn on the flywheel, test if at a certain RPM, bring scoop up, wait a little, bring scoop down
+        // flywheel button
         while (gamepad2.y) {
-            flywheelPow = 1; // decrease if its too powerful
+            flywheelPow = 0.5; // small for the kids
             flywheel.setPower(flywheelPow);
         }
 
-        // intake wheel position controlled by right joystick - BACKUP
-        if (gamepad2.right_stick_y != 0) {
-            if (gamepad2.right_stick_y < 0) {
-                intakePow = -1.0; // theoretically should spin it in reverse if gamepad goes down
-                intake.setPower(intakePow);
-            } else if (gamepad2.right_stick_y > 0) {
-                intakePow = 1.0;
-                intake.setPower(intakePow);
-            }
-        } else {
-            intakePow = 0;
-            intake.setPower(intakePow); // if its not pressed then brake the servo
-        }
-
-        // transition wheel position controlled by left joystick - BACKUP
-        if (gamepad2.left_stick_y != 0) {
-            if (gamepad2.left_stick_y < 0) {
-                transitionPow = -1.0; // theoretically should spin it in reverse if gamepad goes down
-                transition.setPower(transitionPow);
-            } else if (gamepad2.left_stick_y > 0) {
-                transitionPow = 1.0;
-                transition.setPower(transitionPow);
-            }
-        } else {
-            transitionPow = 0.0;
-            transition.setPower(transitionPow); // if its not pressed then brake the servo
-        }
-
-
-        // dpad controls the ramp
-        // up --> highest position (far aiming spot), left --> middle position (in between spot), down --> low position (close spot)
-        // its an if/else if/else if so that clicking multiple buttons at once doesn't confuse it like just in case idk
-        if (gamepad2.dpad_up) {
-            rampPos = 0.5;
-            ramp.setPosition(rampPos);
-        } else if (gamepad2.dpad_down) {
-            rampPos = 0.0;
-            ramp.setPosition(rampPos);
-        } else if (gamepad2.dpad_left) {
-            rampPos = 0.25;
-            ramp.setPosition(rampPos);
-        }
     }
 
     // called during loop()
@@ -232,7 +134,7 @@ public class ScrimmageTeleop extends OpMode {
 
         // Second, rotate angle by the angle the robot is pointing
         //theta = AngleUnit.normalizeRadians(theta -
-                //imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+        //imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
 
         // Third, convert back to cartesian
         double newForward = r * Math.sin(theta);
