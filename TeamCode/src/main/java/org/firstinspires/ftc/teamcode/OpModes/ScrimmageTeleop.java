@@ -60,6 +60,7 @@ public class ScrimmageTeleop extends OpMode {
     double intakePow, transitionPow = 0.5;
     double scoopPos, rampPos = 0.0; // initial position
     double flywheelPow;
+    double ticksPerRevolution = flywheel.getMotorType().getTicksPerRev();
     boolean scoopUp = false;
 
 
@@ -89,6 +90,9 @@ public class ScrimmageTeleop extends OpMode {
         // setting them to init position
         scoop.setPosition(scoopPos);
         ramp.setPosition(rampPos);
+
+        flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER); // for the rpm tracker
+        flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         /* // running with encoders (might add later)
         leftFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -144,55 +148,63 @@ public class ScrimmageTeleop extends OpMode {
         // add other code here with if statements !!
         // note for servos: check whether it needs to be 1 or -1!!
 
-        // brings scoop down - BACKUP
-        while (gamepad2.a) {
+        // brings scoop down - BACKUP - click
+        if (gamepad2.a) {
             scoopPos = 0.0;
             scoop.setPosition(scoopPos);
         }
 
-        // brings scoop UP - BACKUP
-        while (gamepad2.x) {
+        // brings scoop UP - BACKUP - click
+        if (gamepad2.x) {
             scoopPos = 0.5;
             scoop.setPosition(scoopPos);
         }
 
-
-        // OUTTAKE - turn on the flywheel, test if at a certain RPM, bring scoop up, wait a little, bring scoop down
+        // OUTTAKE - turn on the flywheel, test if at a certain RPM, bring scoop up, wait a little, bring scoop down - hold
         while (gamepad2.y) {
             flywheelPow = 1; // decrease if its too powerful
             flywheel.setPower(flywheelPow);
-        }
+            double velocityTps = flywheel.getVelocity();
 
-        // intake wheel position controlled by right joystick - BACKUP
-        if (gamepad2.right_stick_y != 0) {
-            if (gamepad2.right_stick_y < 0) {
-                intakePow = -1.0; // theoretically should spin it in reverse if gamepad goes down
-                intake.setPower(intakePow);
-            } else if (gamepad2.right_stick_y > 0) {
-                intakePow = 1.0;
-                intake.setPower(intakePow);
+            double rpm = velocityTps * 60.0 / ticksPerRevolution; // convert velocity to rpm
+            if (rpm >= 1550) {
+                // brings the scoop up
+                scoopPos = 0.5;
+                scoop.setPosition(scoopPos);
+
+                runtime.reset(); // reset runtime timer
+                while (runtime.seconds() < 3.0) {
+                    // telemetry.addLine("Waiting for outtake");
+                    //telemetry.removeLine(); // idk i dont want it to flood
+                }
+                scoopPos = 0.0;
+                scoop.setPosition(scoopPos); // bringing scoop back down
+
+                // idk
             }
-        } else {
-            intakePow = 0;
-            intake.setPower(intakePow); // if its not pressed then brake the servo
         }
 
-        // transition wheel position controlled by left joystick - BACKUP
-        if (gamepad2.left_stick_y != 0) {
-            if (gamepad2.left_stick_y < 0) {
-                transitionPow = -1.0; // theoretically should spin it in reverse if gamepad goes down
-                transition.setPower(transitionPow);
-            } else if (gamepad2.left_stick_y > 0) {
-                transitionPow = 1.0;
-                transition.setPower(transitionPow);
-            }
-        } else {
-            transitionPow = 0.0;
-            transition.setPower(transitionPow); // if its not pressed then brake the servo
+        // intake wheel position controlled by right joystick - BACKUP - hold
+        while (gamepad2.right_stick_y < 0) {
+            intakePow = -1.0; // theoretically should spin it in reverse if gamepad goes down
+            intake.setPower(intakePow);
+        }
+        while (gamepad2.right_stick_y > 0) {
+            intakePow = 1.0;
+            intake.setPower(intakePow);
         }
 
+        // transition wheel position controlled by left joystick - BACKUP - hold
+        while (gamepad2.left_stick_y < 0) {
+            transitionPow = -1.0; // theoretically should spin it in reverse if gamepad goes down
+            transition.setPower(transitionPow);
+        }
+        while (gamepad2.left_stick_y > 0) {
+            transitionPow = 1.0;
+            transition.setPower(transitionPow);
+        }
 
-        // dpad controls the ramp
+        // dpad controls the ramp - click
         // up --> highest position (far aiming spot), left --> middle position (in between spot), down --> low position (close spot)
         // its an if/else if/else if so that clicking multiple buttons at once doesn't confuse it like just in case idk
         if (gamepad2.dpad_up) {
