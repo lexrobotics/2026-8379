@@ -28,6 +28,11 @@
  */
 package org.firstinspires.ftc.teamcode.OpModes;
 
+// robot connection commands:
+// (navigate to sdk)
+//  ./platform-tools/adb connect 192.168.43.1:5555
+// android studio should automatically connect so u can run
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;

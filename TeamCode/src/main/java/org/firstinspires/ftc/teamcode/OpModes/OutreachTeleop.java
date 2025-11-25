@@ -106,6 +106,10 @@ public class OutreachTeleop extends OpMode {
             flywheelPow = 0.5; // small for the kids
             flywheel.setPower(flywheelPow);
         }
+        while (gamepad2.x) {
+            flywheelPow = 0.0;
+            flywheel.setPower(flywheelPow);
+        }
 
     }
 
