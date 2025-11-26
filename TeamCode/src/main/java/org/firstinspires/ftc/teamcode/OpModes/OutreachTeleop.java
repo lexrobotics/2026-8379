@@ -44,7 +44,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 /* Scrimmage teleop :)
  * imu/field relative driving is currently disabled hence the commented lines
  * also there is no defined imu in tha hardware map */
-@TeleOp(name = "ScrimmageTeleOp", group = "TeleOp")
+@TeleOp(name = "OutreachTeleop", group = "TeleOp")
 //@Disabled
 public class OutreachTeleop extends OpMode {
 
