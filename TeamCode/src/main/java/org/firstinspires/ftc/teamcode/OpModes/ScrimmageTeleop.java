@@ -167,19 +167,13 @@ public class ScrimmageTeleop extends OpMode {
 
         // OUTTAKE - turn on the flywheel, test if at a certain RPM, bring scoop up, wait a little, bring scoop down - hold
         while (gamepad2.y) {
-            flywheelPow = 1; // decrease if its too powerful
-            flywheel.setPower(flywheelPow);
-            telemetry.addLine("Flywheel activated. Low RPM.");
-            double velocityTps = flywheel.getVelocity();
+            flywheel.setVelocity(targetTPS);
+            double current = flywheel.getVelocity();
 
-            double rpm = velocityTps * 60.0 / ticksPerRevolution; // convert velocity to rpm
-            if (rpm >= 1550) {
+            if (Math.abs(current - targetTPS) < 150) {
                 telemetry.addLine("Flywheel ready. 1550 RPM");
-                // brings the scoop up
-                scoopPos = 0.5;
-                scoop.setPosition(scoopPos);
+                scoop.setPosition(scoopUp);
 
-                runtime.reset(); // reset runtime timer
                 while (runtime.seconds() < 3.0) {
                     // telemetry.addLine("Waiting for outtake");
                     //telemetry.removeLine(); // idk i dont want it to flood

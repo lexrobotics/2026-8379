@@ -15,14 +15,15 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-@TeleOp(name = "MotorTest-hello???", group = "TeleOp")
+@TeleOp(name = "SC's Scrip Teleop Ver", group = "TeleOp")
 
-public class MotorTest extends LinearOpMode {
+public class CScrimmageTeleop extends LinearOpMode {
 
     //private ElapsedTime runtime = new ElapsedTime();
 
     //Name declarations
-    private DcMotor leftFront, leftBack, rightFront, rightBack, flywheel;
+    private DcMotor leftFront, leftBack, rightFront, rightBack;
+    private DcMotorEx flywheel;
     private Servo scoop, ramp;
     private CRServo intake, transition;
 
@@ -42,7 +43,6 @@ public class MotorTest extends LinearOpMode {
     double TPR = flywheel.getMotorType().getTicksPerRev();//ticks per revolution
     double targetRPM = 1500.00;
     double targetTPS = (targetRPM/60.0) * TPR;
-
 
 
 
@@ -150,13 +150,15 @@ public class MotorTest extends LinearOpMode {
         if (gamepad2.y){
             telemetry.addLine("flywheel cycle");
             updateTelemetry(telemetry);
-            flywheelPow = 1;
-            flywheel.setPower(flywheelPow);
+            flywheel.setVelocity(targetTPS);
+            double current = flywheel.getVelocity();
 
-            scoop.setPosition(scoopUpPos);
-            scoop.setPosition(scoopDownPos);
-
-            flywheel.setPower(0.00);
+            if (Math.abs(current - targetTPS) < 150) {
+                telemetry.addLine("Flywheel ready. 1550 RPM");
+                scoop.setPosition(scoopUpPos);
+                scoop.setPosition(scoopDownPos); // bringing scoop back down
+                // idk
+            }
 
         }
 
@@ -189,9 +191,12 @@ public class MotorTest extends LinearOpMode {
         leftBack = hardwareMap.get(DcMotor.class, "leftBack");
         rightBack = hardwareMap.get(DcMotor.class, "rightBack");
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
-        flywheel = hardwareMap.get(DcMotor.class, "flywheel");
+        flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
 
         leftFront.setDirection(DcMotor.Direction.REVERSE);
+
+        flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER); // for the rpm tracker
+        flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         //servo funcs
         telemetry.addLine("getting the servos");
