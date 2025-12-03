@@ -32,7 +32,7 @@ public class MotorTest extends LinearOpMode {
     private double flywheelPow = 0.0;
 
     //common position declarations
-    double scoopDownPos = 0.0;
+    double scoopDownPos = 0.6;
     double scoopUpPos = 0.3;
     double rampClosePos = 0.0;
     double rampMidPos = 0.3;
@@ -43,6 +43,7 @@ public class MotorTest extends LinearOpMode {
 
     public void runOpMode() {
         telemetry.addLine("PLEASE FUCKING WORK THIS TIME.");
+        updateTelemetry(telemetry);
 
         //grabs names and assigns stuff form the ds config
         setup();
@@ -54,6 +55,7 @@ public class MotorTest extends LinearOpMode {
         scoop.setPosition(scoopDownPos);
 
         telemetry.addLine("Initialization complete.");
+        updateTelemetry(telemetry);
 
         waitForStart();
         if (isStopRequested()) return;
@@ -70,17 +72,19 @@ public class MotorTest extends LinearOpMode {
     }
 
     public void driveTrain() {
+        telemetry.addLine("Drivetrain on");
+        updateTelemetry(telemetry);
         //robot-relative driving
         //assigning stick funcs
-        double drive = -gamepad1.left_stick_y; // Forward/backward
-        double strafe = gamepad1.left_stick_x; // Left/right
-        double rotate = gamepad1.right_stick_x; // Rotation
+        double drive = -gamepad1.right_stick_y; // Forward/backward
+        double strafe = -gamepad1.right_stick_x; // Left/right
+        double rotate = -gamepad1.left_stick_x; // Rotation
 
         // Calculate power for each motor
         double leftFrontPower = drive + strafe + rotate;
-        double leftRearPower = drive - strafe + rotate;
+        double leftRearPower = -drive + strafe - rotate;
         double rightFrontPower = drive - strafe - rotate;
-        double rightRearPower = drive + strafe - rotate;
+        double rightRearPower = -drive - strafe + rotate;
 
         // Apply power to the motors
         leftFront.setPower(leftFrontPower);
@@ -97,42 +101,42 @@ public class MotorTest extends LinearOpMode {
 
         // OVERRIDE CODE
         // intake
-        if (gamepad2.right_stick_y != 0) { // manual linear power
-            if (gamepad2.right_stick_y > 0) {
-                intakePow = -0.6;
+        while (gamepad2.left_stick_y != 0) {
+            if (gamepad2.left_stick_y > 0) {
+                intakePow = -1;
             } else {
-                intakePow = 0.6;
+                intakePow = 1;
             }
-            intake.setPower(intakePow);
-        } else {
-            intakePow = 0.0;
             intake.setPower(intakePow);
         }
 
         //Transition
-        if (gamepad2.right_stick_x != 0) { // manual linear power
-            if (gamepad2.right_stick_x > 0) {
+        while (gamepad2.right_stick_y != 0) {
+            if (gamepad2.right_stick_y > 0) {
                 telemetry.addLine("T-neg power");
+                updateTelemetry(telemetry);
                 transPow = -1;
+                transition.setPower(transPow);
             } else {
                 telemetry.addLine("T-pos power");
+                updateTelemetry(telemetry);
                 transPow = 1;
+                transition.setPower(transPow);
             }
-            transition.setPower(transPow);
-        } else {
-            transPow = 0.0;
-            transition.setPower(transPow);
+
         }
 
         // scoop down
         if (gamepad2.a) {
             telemetry.addLine("scoop down");
+            updateTelemetry(telemetry);
             scoop.setPosition(scoopDownPos);
         }
 
         // scoop up
         if (gamepad2.x) {
             telemetry.addLine("scoop up");
+            updateTelemetry(telemetry);
             scoop.setPosition(scoopUpPos);
         }
 
@@ -140,6 +144,7 @@ public class MotorTest extends LinearOpMode {
         //fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
         if (gamepad2.y){
             telemetry.addLine("flywheel cycle");
+            updateTelemetry(telemetry);
             flywheelPow = 1;
             flywheel.setPower(flywheelPow);
 
@@ -153,24 +158,28 @@ public class MotorTest extends LinearOpMode {
         // high ramp
         if(gamepad2.dpad_up){
             telemetry.addLine("high ramp");
+            updateTelemetry(telemetry);
             ramp.setPosition(rampFarPos);
         }
 
         // mid ramp
         if(gamepad2.dpad_left){
             telemetry.addLine("mid ramp");
+            updateTelemetry(telemetry);
             ramp.setPosition(rampMidPos);
         }
 
         // close ramp
         if(gamepad2.dpad_down){
             telemetry.addLine("low ramp");
+            updateTelemetry(telemetry);
             ramp.setPosition(rampClosePos);
         }
     }
 
     private void setup() {
         telemetry.addLine("getting the motors");
+        updateTelemetry(telemetry);
         leftFront = hardwareMap.get(DcMotor.class, "leftFront");
         leftBack = hardwareMap.get(DcMotor.class, "leftBack");
         rightBack = hardwareMap.get(DcMotor.class, "rightBack");
@@ -181,6 +190,7 @@ public class MotorTest extends LinearOpMode {
 
         //servo funcs
         telemetry.addLine("getting the servos");
+        updateTelemetry(telemetry);
         scoop = hardwareMap.get(Servo.class, "scoop");
         ramp = hardwareMap.get(Servo.class, "ramp");
         intake = hardwareMap.get(CRServo.class, "intake");
