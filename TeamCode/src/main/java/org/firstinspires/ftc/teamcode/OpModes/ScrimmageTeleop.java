@@ -77,10 +77,10 @@ public class ScrimmageTeleop extends OpMode {
     @Override
     public void init() {
         // getting all the stuff from hardware map
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftBack");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightBack");
-        leftBack = hardwareMap.get(DcMotorEx.class, "leftFront");
-        rightBack = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
+        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
 
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
 
@@ -169,10 +169,12 @@ public class ScrimmageTeleop extends OpMode {
         while (gamepad2.y) {
             flywheelPow = 1; // decrease if its too powerful
             flywheel.setPower(flywheelPow);
+            telemetry.addLine("Flywheel activated. Low RPM.");
             double velocityTps = flywheel.getVelocity();
 
             double rpm = velocityTps * 60.0 / ticksPerRevolution; // convert velocity to rpm
             if (rpm >= 1550) {
+                telemetry.addLine("Flywheel ready. 1550 RPM");
                 // brings the scoop up
                 scoopPos = 0.5;
                 scoop.setPosition(scoopPos);
