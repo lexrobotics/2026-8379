@@ -38,10 +38,6 @@ public class MotorTest extends LinearOpMode {
     double rampMidPos = 0.3;
     double rampFarPos = 0.5;
 
-    //flywheel thigns
-    double TPR = flywheel.getMotorType().getTicksPerRev();//ticks per revolution
-    double targetRPM = 1500.00;
-    double targetTPS = (targetRPM/60.0) * TPR;
 
 
 

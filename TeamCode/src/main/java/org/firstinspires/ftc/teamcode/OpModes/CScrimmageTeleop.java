@@ -149,12 +149,16 @@ public class CScrimmageTeleop extends LinearOpMode {
         //fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
         if (gamepad2.y){
             telemetry.addLine("flywheel cycle");
+            intake.setPower(1);
+            transition.setPower(1);
             updateTelemetry(telemetry);
             flywheel.setVelocity(targetTPS);
             double current = flywheel.getVelocity();
 
             if (Math.abs(current - targetTPS) < 150) {
                 telemetry.addLine("Flywheel ready. 1550 RPM");
+                intake.setPower(0);
+                transition.setPower(0);
                 scoop.setPosition(scoopUpPos);
                 scoop.setPosition(scoopDownPos); // bringing scoop back down
                 // idk
