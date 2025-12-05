@@ -33,7 +33,7 @@ public class MotorTest extends LinearOpMode {
 
     //common position declarations
     double scoopDownPos = 0.6;
-    double scoopUpPos = 0.3;
+    double scoopUpPos = 0.0;
     double rampClosePos = 0.0;
     double rampMidPos = 0.3;
     double rampFarPos = 0.5;
@@ -77,9 +77,9 @@ public class MotorTest extends LinearOpMode {
         updateTelemetry(telemetry);
         //robot-relative driving
         //assigning stick funcs
-        double drive = -gamepad1.right_stick_y; // Forward/backward
-        double strafe = -gamepad1.right_stick_x; // Left/right
-        double rotate = -gamepad1.left_stick_x; // Rotation
+        double drive = -gamepad1.left_stick_y; // Forward/backward
+        double strafe = -gamepad1.left_stick_x; // Left/right
+        double rotate = -gamepad1.right_stick_x; // Rotation
 
         // Calculate power for each motor
         double leftFrontPower = drive + strafe + rotate;
@@ -102,7 +102,7 @@ public class MotorTest extends LinearOpMode {
 
         // OVERRIDE CODE
         // intake
-        while (gamepad2.left_stick_y != 0) {
+        if (gamepad2.left_stick_y != 0) {
             if (gamepad2.left_stick_y > 0) {
                 intakePow = -1;
             } else {
@@ -112,7 +112,7 @@ public class MotorTest extends LinearOpMode {
         }
 
         //Transition
-        while (gamepad2.right_stick_y != 0) {
+        if (gamepad2.right_stick_y != 0) {
             if (gamepad2.right_stick_y > 0) {
                 telemetry.addLine("T-neg power");
                 updateTelemetry(telemetry);
@@ -143,7 +143,7 @@ public class MotorTest extends LinearOpMode {
 
         // NORMAL FUNCTIONS
         //fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
-        if (gamepad2.y){
+        while (gamepad2.y){
             telemetry.addLine("flywheel cycle");
             updateTelemetry(telemetry);
             flywheelPow = 1;
@@ -156,7 +156,8 @@ public class MotorTest extends LinearOpMode {
 
         }
 
-        // high ramp
+        // hi
+        // gh ramp
         if(gamepad2.dpad_up){
             telemetry.addLine("high ramp");
             updateTelemetry(telemetry);
@@ -188,6 +189,7 @@ public class MotorTest extends LinearOpMode {
         flywheel = hardwareMap.get(DcMotor.class, "flywheel");
 
         leftFront.setDirection(DcMotor.Direction.REVERSE);
+        flywheel.setDirection(DcMotor.Direction.REVERSE);
 
         //servo funcs
         telemetry.addLine("getting the servos");
