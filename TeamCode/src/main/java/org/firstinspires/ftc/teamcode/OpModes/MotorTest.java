@@ -100,6 +100,8 @@ public class MotorTest extends LinearOpMode {
         //sets up telemetry so we can call it later
         //Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
+        flywheel.setPower(0.00);
+
         // OVERRIDE CODE
         // intake
         if (gamepad2.left_stick_y != 0) {
@@ -108,6 +110,9 @@ public class MotorTest extends LinearOpMode {
             } else {
                 intakePow = 1;
             }
+            intake.setPower(intakePow);
+        } else {
+            intakePow = 0;
             intake.setPower(intakePow);
         }
 
@@ -125,6 +130,9 @@ public class MotorTest extends LinearOpMode {
                 transition.setPower(transPow);
             }
 
+        } else {
+            transPow = 0;
+            transition.setPower(transPow);
         }
 
         // scoop down
@@ -142,22 +150,48 @@ public class MotorTest extends LinearOpMode {
         }
 
         // NORMAL FUNCTIONS
-        //fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
+        // fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
         while (gamepad2.y){
             telemetry.addLine("flywheel cycle");
             updateTelemetry(telemetry);
+            flywheel.setDirection(DcMotor.Direction.FORWARD);
             flywheelPow = 1;
             flywheel.setPower(flywheelPow);
 
-            scoop.setPosition(scoopUpPos);
-            scoop.setPosition(scoopDownPos);
+            if (gamepad2.a) {
+                telemetry.addLine("scoop down");
+                updateTelemetry(telemetry);
+                scoop.setPosition(scoopDownPos);
+            }
 
-            flywheel.setPower(0.00);
+            // scoop up
+            if (gamepad2.x) {
+                telemetry.addLine("scoop up");
+                updateTelemetry(telemetry);
+                scoop.setPosition(scoopUpPos);
+
+                sleep(1000);
+
+                telemetry.addLine("scoop down");
+                updateTelemetry(telemetry);
+                scoop.setPosition(scoopDownPos);
+            }
+
+            // flywheel.setPower(0.00);
 
         }
 
-        // hi
-        // gh ramp
+        while (gamepad2.b) {
+            telemetry.addLine("flywheel cycle");
+            updateTelemetry(telemetry);
+            flywheel.setDirection(DcMotor.Direction.REVERSE);
+            flywheelPow = 1;
+            flywheel.setPower(flywheelPow);
+
+            // flywheel.setPower(0.00);
+        }
+
+        // high ramp
         if(gamepad2.dpad_up){
             telemetry.addLine("high ramp");
             updateTelemetry(telemetry);
