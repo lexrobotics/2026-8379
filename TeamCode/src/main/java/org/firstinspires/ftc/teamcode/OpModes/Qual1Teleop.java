@@ -1,29 +1,20 @@
+
 package org.firstinspires.ftc.teamcode.OpModes;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+@TeleOp(name = "Qual1Teleop", group = "TeleOp")
 
-@TeleOp(name = "SC's Scrip Teleop Ver", group = "TeleOp")
-
-public class CScrimmageTeleop extends LinearOpMode {
+public class Qual1Teleop extends LinearOpMode {
 
     //private ElapsedTime runtime = new ElapsedTime();
 
     //Name declarations
-    private DcMotor leftFront, leftBack, rightFront, rightBack;
-    private DcMotorEx flywheel;
+    private DcMotor leftFront, leftBack, rightFront, rightBack, flywheel;
     private Servo scoop, ramp;
     private CRServo intake, transition;
 
@@ -34,21 +25,16 @@ public class CScrimmageTeleop extends LinearOpMode {
 
     //common position declarations
     double scoopDownPos = 0.6;
-    double scoopUpPos = 0.3;
+    double scoopUpPos = 0.0;
     double rampClosePos = 0.0;
     double rampMidPos = 0.3;
     double rampFarPos = 0.5;
 
-    //flywheel thigns
-    double TPR = flywheel.getMotorType().getTicksPerRev();//ticks per revolution
-    double targetRPM = 1500.00;
-    double targetTPS = (targetRPM/60.0) * TPR;
+
 
 
 
     public void runOpMode() {
-        telemetry.addLine("PLEASE FUCKING WORK THIS TIME.");
-        updateTelemetry(telemetry);
 
         //grabs names and assigns stuff form the ds config
         setup();
@@ -81,9 +67,9 @@ public class CScrimmageTeleop extends LinearOpMode {
         updateTelemetry(telemetry);
         //robot-relative driving
         //assigning stick funcs
-        double drive = -gamepad1.right_stick_y; // Forward/backward
-        double strafe = -gamepad1.right_stick_x; // Left/right
-        double rotate = -gamepad1.left_stick_x; // Rotation
+        double drive = -gamepad1.left_stick_y; // Forward/backward
+        double strafe = -gamepad1.left_stick_x; // Left/right
+        double rotate = -gamepad1.right_stick_x * 0.75; // Rotation
 
         // Calculate power for each motor
         double leftFrontPower = drive + strafe + rotate;
@@ -104,19 +90,24 @@ public class CScrimmageTeleop extends LinearOpMode {
         //sets up telemetry so we can call it later
         //Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
+        flywheel.setPower(0.00);
+
         // OVERRIDE CODE
         // intake
-        while (gamepad2.left_stick_y != 0) {
+        if (gamepad2.left_stick_y != 0) {
             if (gamepad2.left_stick_y > 0) {
                 intakePow = -1;
             } else {
                 intakePow = 1;
             }
             intake.setPower(intakePow);
+        } else {
+            intakePow = 0;
+            intake.setPower(intakePow);
         }
 
         //Transition
-        while (gamepad2.right_stick_y != 0) {
+        if (gamepad2.right_stick_y != 0) {
             if (gamepad2.right_stick_y > 0) {
                 telemetry.addLine("T-neg power");
                 updateTelemetry(telemetry);
@@ -129,6 +120,9 @@ public class CScrimmageTeleop extends LinearOpMode {
                 transition.setPower(transPow);
             }
 
+        } else {
+            transPow = 0;
+            transition.setPower(transPow);
         }
 
         // scoop down
@@ -146,20 +140,45 @@ public class CScrimmageTeleop extends LinearOpMode {
         }
 
         // NORMAL FUNCTIONS
-        //fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
-        if (gamepad2.y){
+        // fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
+        while (gamepad2.y){
             telemetry.addLine("flywheel cycle");
             updateTelemetry(telemetry);
-            flywheel.setVelocity(targetTPS);
-            double current = flywheel.getVelocity();
+            flywheel.setDirection(DcMotor.Direction.REVERSE);
+            flywheelPow = 0.75; // bc too powerful at 1
+            flywheel.setPower(flywheelPow);
 
-            if (Math.abs(current - targetTPS) < 150) {
-                telemetry.addLine("Flywheel ready. 1550 RPM");
-                scoop.setPosition(scoopUpPos);
-                scoop.setPosition(scoopDownPos); // bringing scoop back down
-                // idk
+            if (gamepad2.a) {
+                telemetry.addLine("scoop down");
+                updateTelemetry(telemetry);
+                scoop.setPosition(scoopDownPos);
             }
 
+            // scoop up
+            if (gamepad2.x) {
+                telemetry.addLine("scoop up");
+                updateTelemetry(telemetry);
+                scoop.setPosition(scoopUpPos);
+
+                sleep(1000);
+
+                telemetry.addLine("scoop down");
+                updateTelemetry(telemetry);
+                scoop.setPosition(scoopDownPos);
+            }
+
+            // flywheel.setPower(0.00);
+
+        }
+
+        while (gamepad2.b) {
+            telemetry.addLine("flywheel cycle");
+            updateTelemetry(telemetry);
+            flywheel.setDirection(DcMotor.Direction.FORWARD);
+            flywheelPow = 0.75; // bc too powerful at 1
+            flywheel.setPower(flywheelPow);
+
+            // flywheel.setPower(0.00);
         }
 
         // high ramp
@@ -191,12 +210,9 @@ public class CScrimmageTeleop extends LinearOpMode {
         leftBack = hardwareMap.get(DcMotor.class, "leftBack");
         rightBack = hardwareMap.get(DcMotor.class, "rightBack");
         rightFront = hardwareMap.get(DcMotor.class, "rightFront");
-        flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        flywheel = hardwareMap.get(DcMotor.class, "flywheel");
 
         leftFront.setDirection(DcMotor.Direction.REVERSE);
-
-        flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER); // for the rpm tracker
-        flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         //servo funcs
         telemetry.addLine("getting the servos");

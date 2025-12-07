@@ -65,14 +65,18 @@ public class OutreachTeleop extends OpMode {
     @Override
     public void init() {
         // getting all the stuff from hardware map
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftBack");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightBack");
-        leftBack = hardwareMap.get(DcMotorEx.class, "leftFront");
-        rightBack = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
+        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
 
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
+        leftBack.setDirection(DcMotorEx.Direction.REVERSE);
 
         flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+
+        flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER); // for the rpm tracker
+        flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
         /* // running with encoders (might add later)
         leftFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -101,13 +105,12 @@ public class OutreachTeleop extends OpMode {
 
         driveTrain();
 
+        flywheelPow = 0;
+        flywheel.setPower(flywheelPow);
+
         // flywheel button
         while (gamepad2.y) {
             flywheelPow = 0.5; // small for the kids
-            flywheel.setPower(flywheelPow);
-        }
-        while (gamepad2.x) {
-            flywheelPow = 0.0;
             flywheel.setPower(flywheelPow);
         }
 

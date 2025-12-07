@@ -1,4 +1,4 @@
 package org.firstinspires.ftc.teamcode.OpModes;
 
-public class ScrimmageAutoFar {
+public class Qual1AutoFar {
 }
