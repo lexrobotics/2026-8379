@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "Qual1Teleop", group = "TeleOp")
@@ -14,7 +15,7 @@ public class Qual1Teleop extends LinearOpMode {
     //private ElapsedTime runtime = new ElapsedTime();
 
     //Name declarations
-    private DcMotor leftFront, leftBack, rightFront, rightBack, flywheel;
+    private DcMotorEx leftFront, leftBack, rightFront, rightBack, flywheel;
     private Servo scoop, ramp;
     private CRServo intake, transition;
 
@@ -30,9 +31,9 @@ public class Qual1Teleop extends LinearOpMode {
     double rampMidPos = 0.3;
     double rampFarPos = 0.5;
 
-
-
-
+    double TPR = 104;
+    double rpm;
+    double TPS;
 
     public void runOpMode() {
 
@@ -90,6 +91,10 @@ public class Qual1Teleop extends LinearOpMode {
         //sets up telemetry so we can call it later
         //Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
+        // flywheel encoder stuff to get RPM
+        TPS = flywheel.getVelocity();
+        rpm = (TPS / TPR) * 60.0;
+
         flywheel.setPower(0.00);
 
         // OVERRIDE CODE
@@ -139,14 +144,19 @@ public class Qual1Teleop extends LinearOpMode {
             scoop.setPosition(scoopUpPos);
         }
 
-        // NORMAL FUNCTIONS
         // fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
         while (gamepad2.y){
             telemetry.addLine("flywheel cycle");
             updateTelemetry(telemetry);
-            flywheel.setDirection(DcMotor.Direction.REVERSE);
+            flywheel.setDirection(DcMotor.Direction.FORWARD);
             flywheelPow = 0.75; // bc too powerful at 1
             flywheel.setPower(flywheelPow);
+
+            // rpm "tracker" for override
+            if (rpm > 1500) {
+                telemetry.addLine("RPM > 1500");
+                updateTelemetry(telemetry);
+            }
 
             if (gamepad2.a) {
                 telemetry.addLine("scoop down");
@@ -167,18 +177,32 @@ public class Qual1Teleop extends LinearOpMode {
                 scoop.setPosition(scoopDownPos);
             }
 
-            // flywheel.setPower(0.00);
-
         }
 
+        // NORMAL FUNCTIONS
+
         while (gamepad2.b) {
-            telemetry.addLine("flywheel cycle");
+            telemetry.addLine("flywheel cycle - automated");
             updateTelemetry(telemetry);
-            flywheel.setDirection(DcMotor.Direction.FORWARD);
+            flywheel.setDirection(DcMotorEx.Direction.FORWARD);
             flywheelPow = 0.75; // bc too powerful at 1
             flywheel.setPower(flywheelPow);
 
-            // flywheel.setPower(0.00);
+            if (rpm > 1500) {
+                telemetry.addLine("rpm > 1500");
+                updateTelemetry(telemetry);
+
+                telemetry.addLine("scoop up");
+                updateTelemetry(telemetry);
+                scoop.setPosition(scoopUpPos);
+
+                sleep(1000);
+
+                telemetry.addLine("scoop down");
+                updateTelemetry(telemetry);
+                scoop.setPosition(scoopDownPos);
+
+            }
         }
 
         // high ramp
@@ -206,13 +230,13 @@ public class Qual1Teleop extends LinearOpMode {
     private void setup() {
         telemetry.addLine("getting the motors");
         updateTelemetry(telemetry);
-        leftFront = hardwareMap.get(DcMotor.class, "leftFront");
-        leftBack = hardwareMap.get(DcMotor.class, "leftBack");
-        rightBack = hardwareMap.get(DcMotor.class, "rightBack");
-        rightFront = hardwareMap.get(DcMotor.class, "rightFront");
-        flywheel = hardwareMap.get(DcMotor.class, "flywheel");
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
+        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
+        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
 
-        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        leftFront.setDirection(DcMotorEx.Direction.REVERSE);
 
         //servo funcs
         telemetry.addLine("getting the servos");
