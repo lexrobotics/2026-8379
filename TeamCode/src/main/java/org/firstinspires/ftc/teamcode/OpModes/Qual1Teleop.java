@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "Qual1Teleop", group = "TeleOp")
@@ -93,7 +94,7 @@ public class Qual1Teleop extends LinearOpMode {
 
         // flywheel encoder stuff to get RPM
         TPS = flywheel.getVelocity();
-        rpm = (TPS / TPR) * 60.0;
+        rpm = Math.abs((TPS / TPR) * 60.0);
 
         flywheel.setPower(0.00);
 
@@ -146,15 +147,19 @@ public class Qual1Teleop extends LinearOpMode {
 
         // fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
         while (gamepad2.y){
+            // flywheel encoder stuff to get RPM
+            TPS = flywheel.getVelocity();
+            rpm = Math.abs((TPS / TPR) * 60.0);
+
             telemetry.addLine("flywheel cycle");
             updateTelemetry(telemetry);
-            flywheel.setDirection(DcMotor.Direction.FORWARD);
+            flywheel.setDirection(DcMotor.Direction.REVERSE);
             flywheelPow = 0.75; // bc too powerful at 1
             flywheel.setPower(flywheelPow);
 
             // rpm "tracker" for override
-            if (rpm > 1500) {
-                telemetry.addLine("RPM > 1500");
+            if (rpm > 1000) {
+                telemetry.addLine("RPM > 1000");
                 updateTelemetry(telemetry);
             }
 
@@ -176,20 +181,24 @@ public class Qual1Teleop extends LinearOpMode {
                 updateTelemetry(telemetry);
                 scoop.setPosition(scoopDownPos);
             }
-
         }
 
         // NORMAL FUNCTIONS
 
+        // full flywheel automated cycle
         while (gamepad2.b) {
-            telemetry.addLine("flywheel cycle - automated");
+            // flywheel encoder stuff to get RPM
+            TPS = flywheel.getVelocity();
+            rpm = Math.abs((TPS / TPR) * 60.0);
+
+            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm);
             updateTelemetry(telemetry);
-            flywheel.setDirection(DcMotorEx.Direction.FORWARD);
+            flywheel.setDirection(DcMotorEx.Direction.REVERSE);
             flywheelPow = 0.75; // bc too powerful at 1
             flywheel.setPower(flywheelPow);
 
-            if (rpm > 1500) {
-                telemetry.addLine("rpm > 1500");
+            if (rpm > 1000) {
+                telemetry.addLine("rpm > 1000");
                 updateTelemetry(telemetry);
 
                 telemetry.addLine("scoop up");
@@ -202,25 +211,28 @@ public class Qual1Teleop extends LinearOpMode {
                 updateTelemetry(telemetry);
                 scoop.setPosition(scoopDownPos);
 
+                flywheelPow = 0.0; // stops flywheel automatically
+                flywheel.setPower(flywheelPow);
+
             }
         }
 
         // high ramp
-        if(gamepad2.dpad_up){
+        if (gamepad2.dpad_up) {
             telemetry.addLine("high ramp");
             updateTelemetry(telemetry);
             ramp.setPosition(rampFarPos);
         }
 
         // mid ramp
-        if(gamepad2.dpad_left){
+        if (gamepad2.dpad_left) {
             telemetry.addLine("mid ramp");
             updateTelemetry(telemetry);
             ramp.setPosition(rampMidPos);
         }
 
         // close ramp
-        if(gamepad2.dpad_down){
+        if (gamepad2.dpad_down) {
             telemetry.addLine("low ramp");
             updateTelemetry(telemetry);
             ramp.setPosition(rampClosePos);
