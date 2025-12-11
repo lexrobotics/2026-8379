@@ -1,4 +1,3 @@
-
 package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -8,12 +7,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name = "Qual1Teleop", group = "TeleOp")
 
 public class Qual1Teleop extends LinearOpMode {
 
-    //private ElapsedTime runtime = new ElapsedTime();
+    // private ElapsedTime runtime = new ElapsedTime();
 
     //Name declarations
     private DcMotorEx leftFront, leftBack, rightFront, rightBack, flywheel;
