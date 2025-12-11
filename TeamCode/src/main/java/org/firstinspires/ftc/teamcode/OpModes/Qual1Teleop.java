@@ -147,6 +147,7 @@ public class Qual1Teleop extends LinearOpMode {
 
         // fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
         while (gamepad2.y){
+            driveTrain();
             // flywheel encoder stuff to get RPM
             TPS = flywheel.getVelocity();
             rpm = Math.abs((TPS / TPR) * 60.0);
@@ -187,6 +188,7 @@ public class Qual1Teleop extends LinearOpMode {
 
         // full flywheel automated cycle
         while (gamepad2.b) {
+            driveTrain(); // so chassis can run while flywheel
             // flywheel encoder stuff to get RPM
             TPS = flywheel.getVelocity();
             rpm = Math.abs((TPS / TPR) * 60.0);
