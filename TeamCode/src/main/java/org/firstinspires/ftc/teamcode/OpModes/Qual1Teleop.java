@@ -32,12 +32,12 @@ public class Qual1Teleop extends LinearOpMode {
     double rampMidPos = 0.3;
     double rampFarPos = 0.5;
 
-    double TPR = 104;
+    double TPR = 100.8;
     double rpm;
     double TPS;
 
     double targetRPM = 1000.0;
-    double targetTPS = (targetRPM/60.0)*TPR;
+    double targetTPS = (targetRPM*TPR)/60;
 
     public void runOpMode() {
 
@@ -229,9 +229,9 @@ public class Qual1Teleop extends LinearOpMode {
             TPS = flywheel.getVelocity();
             rpm = Math.abs((TPS / TPR) * 60.0);
 
-            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm);
+            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\ncurrent TPS: " + TPS);
 
-            if(Math.abs(rpm - targetRPM) < 30){
+            if(Math.abs(TPS - targetTPS) < 30){
                 scoop.setPosition(scoopUpPos);
                 sleep(250);
                 scoop.setPosition(scoopDownPos);
@@ -261,6 +261,9 @@ public class Qual1Teleop extends LinearOpMode {
             updateTelemetry(telemetry);
             ramp.setPosition(rampClosePos);
         }
+
+        //intake+transition
+        //if(gamepad2.)
     }
 
     private void setup() {
