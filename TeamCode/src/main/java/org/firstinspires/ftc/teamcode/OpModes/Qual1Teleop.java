@@ -36,6 +36,9 @@ public class Qual1Teleop extends LinearOpMode {
     double rpm;
     double TPS;
 
+    double targetRPM = 1000.0;
+    double targetTPS = (targetRPM/60.0)*TPR;
+
     public void runOpMode() {
 
         //grabs names and assigns stuff form the ds config
@@ -190,6 +193,8 @@ public class Qual1Teleop extends LinearOpMode {
         while (gamepad2.b) {
             driveTrain(); // so chassis can run while flywheel
             // flywheel encoder stuff to get RPM
+
+            /*
             TPS = flywheel.getVelocity();
             rpm = Math.abs((TPS / TPR) * 60.0);
 
@@ -216,7 +221,24 @@ public class Qual1Teleop extends LinearOpMode {
                 flywheelPow = 0.0; // stops flywheel automatically
                 flywheel.setPower(flywheelPow);
 
+            }*/
+
+            //velocity-based control instead of climbing RPM-based controll
+            flywheel.setVelocity(targetTPS);
+
+            TPS = flywheel.getVelocity();
+            rpm = Math.abs((TPS / TPR) * 60.0);
+
+            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm);
+
+            if(Math.abs(rpm - targetRPM) < 30){
+                scoop.setPosition(scoopUpPos);
+                sleep(250);
+                scoop.setPosition(scoopDownPos);
+                sleep(2000);//so the cycle doesn't repeat itself too fast
             }
+
+
         }
 
         // high ramp
