@@ -226,16 +226,17 @@ public class Qual1Teleop extends LinearOpMode {
             //velocity-based control instead of climbing RPM-based controll
             flywheel.setVelocity(targetTPS);
 
-            TPS = flywheel.getVelocity();
+            TPS = Math.abs(flywheel.getVelocity());
             rpm = Math.abs((TPS / TPR) * 60.0);
 
-            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\ncurrent TPS: " + TPS);
+            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\ncurrent TPS: " + TPS + "\nTargetTPS: " + targetTPS);
 
             if(Math.abs(TPS - targetTPS) < 30){
                 scoop.setPosition(scoopUpPos);
                 sleep(250);
                 scoop.setPosition(scoopDownPos);
-                sleep(2000);//so the cycle doesn't repeat itself too fast
+                flywheel.setVelocity(0); // stops flywheel
+                sleep(2000); //so the cycle doesn't repeat itself too fast
             }
 
 
@@ -276,6 +277,8 @@ public class Qual1Teleop extends LinearOpMode {
         flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
 
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
+        flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        flywheel.setDirection(DcMotorEx.Direction.REVERSE);
 
         //servo funcs
         telemetry.addLine("getting the servos");
