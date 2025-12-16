@@ -36,8 +36,10 @@ public class Qual1Teleop extends LinearOpMode {
     double rpm;
     double TPS;
 
-    double targetRPM = 1000.0;
-    double targetTPS = (targetRPM*TPR)/60;
+    double targetRPM = 1500.0;
+    double targetFarTPS = (targetRPM*TPR)/60;
+
+    double targetNearTPS = (targetRPM-750)*TPR/60;
 
     public void runOpMode() {
 
@@ -149,7 +151,7 @@ public class Qual1Teleop extends LinearOpMode {
         }
 
         // fake outtake cycle (no rpm since this is w/o encoders and I didn't include intake/trans stuff)
-        while (gamepad2.y){
+        if (gamepad2.y){
             driveTrain();
             // flywheel encoder stuff to get RPM
             TPS = flywheel.getVelocity();
@@ -158,8 +160,8 @@ public class Qual1Teleop extends LinearOpMode {
             telemetry.addLine("flywheel cycle");
             updateTelemetry(telemetry);
             flywheel.setDirection(DcMotor.Direction.REVERSE);
-            flywheelPow = 0.75; // bc too powerful at 1
-            flywheel.setPower(flywheelPow);
+            //flywheelPow = 0.75; // bc too powerful at 1
+            flywheel.setVelocity(targetFarTPS);
 
             // rpm "tracker" for override
             if (rpm > 1000) {
@@ -190,78 +192,118 @@ public class Qual1Teleop extends LinearOpMode {
         // NORMAL FUNCTIONS
 
         // full flywheel automated cycle
-        while (gamepad2.b) {
-            driveTrain(); // so chassis can run while flywheel
-            // flywheel encoder stuff to get RPM
+        /*if (gamepad2.b) {
+            //driveTrain(); // so chassis can run while flywheel
 
-            /*
-            TPS = flywheel.getVelocity();
-            rpm = Math.abs((TPS / TPR) * 60.0);
 
-            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm);
-            updateTelemetry(telemetry);
-            flywheel.setDirection(DcMotorEx.Direction.REVERSE);
-            flywheelPow = 0.75; // bc too powerful at 1
-            flywheel.setPower(flywheelPow);
-
-            if (rpm > 1000) {
-                telemetry.addLine("rpm > 1000");
-                updateTelemetry(telemetry);
-
-                telemetry.addLine("scoop up");
-                updateTelemetry(telemetry);
-                scoop.setPosition(scoopUpPos);
-
-                sleep(1000);
-
-                telemetry.addLine("scoop down");
-                updateTelemetry(telemetry);
-                scoop.setPosition(scoopDownPos);
-
-                flywheelPow = 0.0; // stops flywheel automatically
-                flywheel.setPower(flywheelPow);
-
-            }*/
-
-            //velocity-based control instead of climbing RPM-based controll
-            flywheel.setVelocity(targetTPS);
+            //velocity-based control instead of climbing RPM-based control
+            flywheel.setVelocity(targetFarTPS);
 
             TPS = Math.abs(flywheel.getVelocity());
             rpm = Math.abs((TPS / TPR) * 60.0);
 
-            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\ncurrent TPS: " + TPS + "\nTargetTPS: " + targetTPS);
+            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\ncurrent TPS: " + TPS + "\nTargetTPS: " + targetFarTPS);
 
-            if(Math.abs(TPS - targetTPS) < 30){
+            if(Math.abs(TPS - targetFarTPS) < 50){
+                intake.setPower(1);
+                transPow = 1;
+                transition.setPower(transPow);//so any ball in the transition doesn'tblocktheball in the scoop
+                sleep(250);
+                transition.setPower(0);
                 scoop.setPosition(scoopUpPos);
                 sleep(250);
                 scoop.setPosition(scoopDownPos);
+
+                transPow = -1;
+                transition.setPower(transPow);//loads next ball
+                sleep(3000); //so the cycle doesn't repeat itself too fast
                 flywheel.setVelocity(0); // stops flywheel
-                sleep(2000); //so the cycle doesn't repeat itself too fast
+                sleep(200);
+                intake.setPower(0);
+
             }
 
 
+        }*/
+
+        // far shoot
+        if (gamepad2.dpad_up) {
+            flywheel.setVelocity(targetFarTPS);
+
+            TPS = Math.abs(flywheel.getVelocity());
+            rpm = Math.abs((TPS / TPR) * 60.0);
+
+            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\ncurrent TPS: " + TPS + "\nTargetTPS: " + targetFarTPS);
+
+            if(Math.abs(TPS - targetFarTPS) < 50){
+                intake.setPower(1);
+                transPow = 1;
+                transition.setPower(transPow);//so any ball in the transition doesn'tblocktheball in the scoop
+                sleep(250);
+                transition.setPower(0);
+                scoop.setPosition(scoopUpPos);
+                sleep(250);
+                scoop.setPosition(scoopDownPos);
+
+                transPow = -1;
+                transition.setPower(transPow);//loads next ball
+                sleep(3000); //so the cycle doesn't repeat itself too fast
+                flywheel.setVelocity(0); // stops flywheel
+                sleep(200);
+                intake.setPower(0);
+
+            }
         }
 
-        // high ramp
+        // nearshoot
+        if (gamepad2.dpad_down) {
+            flywheel.setVelocity(targetNearTPS);
+
+            TPS = Math.abs(flywheel.getVelocity());
+            rpm = Math.abs((TPS / TPR) * 60.0);
+
+            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\ncurrent TPS: " + TPS + "\nTargetTPS: " + targetNearTPS);
+
+            if(Math.abs(TPS - targetNearTPS) < 50){
+                intake.setPower(1);
+                transPow = 1;
+                transition.setPower(transPow);//so any ball in the transition doesn't block the ball in the scoop
+                sleep(250);
+                transition.setPower(0);
+                scoop.setPosition(scoopUpPos);
+                sleep(250);
+                scoop.setPosition(scoopDownPos);
+
+                transPow = -1;
+                transition.setPower(transPow);//loads next ball
+                //sleep(3000); //so the cycle doesn't repeat itself too fast
+                flywheel.setVelocity(0); // stops flywheel
+                sleep(1500);
+                intake.setPower(0);
+
+            }
+        }
+
+        /* old ramp code
         if (gamepad2.dpad_up) {
             telemetry.addLine("high ramp");
             updateTelemetry(telemetry);
             ramp.setPosition(rampFarPos);
         }
-
-        // mid ramp
         if (gamepad2.dpad_left) {
             telemetry.addLine("mid ramp");
             updateTelemetry(telemetry);
             ramp.setPosition(rampMidPos);
         }
-
-        // close ramp
         if (gamepad2.dpad_down) {
             telemetry.addLine("low ramp");
             updateTelemetry(telemetry);
             ramp.setPosition(rampClosePos);
         }
+
+         */
+
+
 
         //intake+transition
         //if(gamepad2.)
