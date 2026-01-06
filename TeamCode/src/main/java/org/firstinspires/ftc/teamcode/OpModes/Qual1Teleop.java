@@ -9,6 +9,11 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+// robot connection commands:
+// (navigate to sdk) connect to robot wifi
+// ./platform-tools/adb connect 192.168.43.1:5555
+// android studio should automatically connect so u can run
+
 @TeleOp(name = "Qual1Teleop", group = "TeleOp")
 
 public class Qual1Teleop extends LinearOpMode {
@@ -36,10 +41,11 @@ public class Qual1Teleop extends LinearOpMode {
     double rpm;
     double TPS;
 
-    double targetRPM = 1500.0;
-    double targetFarTPS = (targetRPM*TPR)/60;
+    double targetRPMFar = 1400.0;
+    double targetRPMNear = 650.0;
+    double targetFarTPS = (targetRPMFar*TPR)/60;
 
-    double targetNearTPS = (targetRPM-750)*TPR/60;
+    double targetNearTPS = (targetRPMNear)*TPR/60;
 
     public void runOpMode() {
 
@@ -70,7 +76,7 @@ public class Qual1Teleop extends LinearOpMode {
     }
 
     public void driveTrain() {
-        telemetry.addLine("Drivetrain on");
+        // telemetry.addLine("Drivetrain on");
         updateTelemetry(telemetry);
         //robot-relative driving
         //assigning stick funcs
@@ -89,8 +95,6 @@ public class Qual1Teleop extends LinearOpMode {
         leftBack.setPower(leftRearPower);
         rightFront.setPower(rightFrontPower);
         rightBack.setPower(rightRearPower);
-
-
     }
 
     public void robot(){
@@ -181,7 +185,7 @@ public class Qual1Teleop extends LinearOpMode {
                 updateTelemetry(telemetry);
                 scoop.setPosition(scoopUpPos);
 
-                sleep(1000);
+                Wait(1000);
 
                 telemetry.addLine("scoop down");
                 updateTelemetry(telemetry);
@@ -227,60 +231,83 @@ public class Qual1Teleop extends LinearOpMode {
         }*/
 
         // far shoot
-        if (gamepad2.dpad_up) {
+        while (gamepad2.dpad_up) {
+            driveTrain();
             flywheel.setVelocity(targetFarTPS);
 
             TPS = Math.abs(flywheel.getVelocity());
             rpm = Math.abs((TPS / TPR) * 60.0);
 
-            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\ncurrent TPS: " + TPS + "\nTargetTPS: " + targetFarTPS);
+            telemetry.clear(); // to avoid clogging up drive station
+            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\ncurrent TPS: " + TPS + "\nTargetTPS: " + targetNearTPS);
 
-            if(Math.abs(TPS - targetFarTPS) < 50){
+            if (Math.abs(TPS - targetFarTPS) < 50) {
                 intake.setPower(1);
                 transPow = 1;
-                transition.setPower(transPow);//so any ball in the transition doesn'tblocktheball in the scoop
-                sleep(250);
+                transition.setPower(transPow);//so any ball in the transition doesn't block the ball in the scoop
+                Wait(250);
                 transition.setPower(0);
+                // actually shooting the ball w scoop
                 scoop.setPosition(scoopUpPos);
-                sleep(250);
+                Wait(250);
                 scoop.setPosition(scoopDownPos);
 
                 transPow = -1;
-                transition.setPower(transPow);//loads next ball
-                sleep(3000); //so the cycle doesn't repeat itself too fast
+                transition.setPower(transPow); //loads next ball
+                //sleep(3000); //so the cycle doesn't repeat itself too fast
                 flywheel.setVelocity(0); // stops flywheel
-                sleep(200);
+                Wait(1500);
+                transition.setPower(0);
                 intake.setPower(0);
-
+            } else if (TPS - targetFarTPS > 0) {
+                // flywheel too fast
+                flywheel.setVelocity(0);
+                Wait(500);
+                flywheel.setVelocity(targetFarTPS);
+            } else {
+                // flywheel too slow, nothing needed
+                flywheel.setVelocity(targetFarTPS);
             }
         }
 
         // nearshoot
-        if (gamepad2.dpad_down) {
+        while (gamepad2.dpad_down) {
+            driveTrain();
             flywheel.setVelocity(targetNearTPS);
 
             TPS = Math.abs(flywheel.getVelocity());
             rpm = Math.abs((TPS / TPR) * 60.0);
 
+            telemetry.clear(); // to avoid clogging up drive station
             telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\ncurrent TPS: " + TPS + "\nTargetTPS: " + targetNearTPS);
 
-            if(Math.abs(TPS - targetNearTPS) < 50){
+            if (Math.abs(TPS - targetNearTPS) < 50) {
                 intake.setPower(1);
                 transPow = 1;
                 transition.setPower(transPow);//so any ball in the transition doesn't block the ball in the scoop
-                sleep(250);
+                Wait(250);
                 transition.setPower(0);
+                // actually shooting the ball w scoop
                 scoop.setPosition(scoopUpPos);
-                sleep(250);
+                Wait(250);
                 scoop.setPosition(scoopDownPos);
 
                 transPow = -1;
-                transition.setPower(transPow);//loads next ball
+                transition.setPower(transPow); //loads next ball
                 //sleep(3000); //so the cycle doesn't repeat itself too fast
                 flywheel.setVelocity(0); // stops flywheel
-                sleep(1500);
+                Wait(1500);
+                transition.setPower(0);
                 intake.setPower(0);
+            } else if (TPS - targetNearTPS > 0) {
+                // flywheel too fast
+                flywheel.setVelocity(0);
+                Wait(500);
+                flywheel.setVelocity(targetNearTPS);
+            } else {
 
+                // flywheel too slow, nothing needed
+                flywheel.setVelocity(targetNearTPS);
             }
         }
 
@@ -330,5 +357,13 @@ public class Qual1Teleop extends LinearOpMode {
         intake = hardwareMap.get(CRServo.class, "intake");
         transition = hardwareMap.get(CRServo.class, "transition");
 
+    }
+
+    private void Wait(double milliseconds) {
+        ElapsedTime timer = new ElapsedTime();
+        while (opModeIsActive() && timer.milliseconds() < milliseconds) {
+            driveTrain();
+            telemetry.update();
+        }
     }
 }

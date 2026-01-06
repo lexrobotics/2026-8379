@@ -23,7 +23,7 @@ import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
 import com.acmerobotics.roadrunner.ftc.Encoder;
-import com.acmerobotics.roadrunner.ftc.FlightRecorder;
+// import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.acmerobotics.roadrunner.ftc.LazyHardwareMapImu;
 import com.acmerobotics.roadrunner.ftc.LazyImu;
 import com.acmerobotics.roadrunner.ftc.LynxFirmware;
@@ -85,13 +85,13 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.toRadians(60);
 
         // path controller gains for tuning
-        public double axialGain = 0.0;
-        public double lateralGain = 0.0;
-        public double headingGain = -0.0001; // shared with turn
+        public double axialGain = 8.0;
+        public double lateralGain = 8.0;
+        public double headingGain = 5.0;
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
-        public double headingVelGain = 0.0; // shared with turn
+        public double headingVelGain = 0.0;
 
         // weight constants
         public static double VX_WEIGHT = 1;
@@ -170,8 +170,8 @@ public final class MecanumDrive {
 
             YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
 
-            FlightRecorder.write("MECANUM_LOCALIZER_INPUTS", new MecanumLocalizerInputsMessage(
-                    leftFrontPosVel, leftBackPosVel, rightBackPosVel, rightFrontPosVel, angles));
+            // FlightRecorder.write("MECANUM_LOCALIZER_INPUTS", new MecanumLocalizerInputsMessage(
+                    // leftFrontPosVel, leftBackPosVel, rightBackPosVel, rightFrontPosVel, angles));
 
             Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
 
@@ -255,7 +255,7 @@ public final class MecanumDrive {
 
         localizer = new DriveLocalizer(pose);
 
-        FlightRecorder.write("MECANUM_PARAMS", PARAMS);
+        // FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
 
     public void setDrivePowers(PoseVelocity2d powers) {
