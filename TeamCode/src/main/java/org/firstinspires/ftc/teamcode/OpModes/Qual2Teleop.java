@@ -18,8 +18,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Qual2Teleop extends LinearOpMode {
 
-    // private ElapsedTime runtime = new ElapsedTime();
-
     //Name declarations
     private DcMotorEx leftFront, leftBack, rightFront, rightBack, flywheel;
     private Servo scoop, ramp;
@@ -33,16 +31,16 @@ public class Qual2Teleop extends LinearOpMode {
     //common position declarations
     double scoopDownPos = 0.6;
     double scoopUpPos = 0.0;
-    double rampClosePos = 0.0;
-    double rampMidPos = 0.3;
-    double rampFarPos = 0.5;
+    double rampClosePos = 0.25;
+    double rampMidPos = 0.5;
+    double rampFarPos = 0.7;
 
     double TPR = 100.8;
     double rpm;
     double TPS;
 
     double targetRPMFar = 1400.0;
-    double targetRPMNear = 650.0;
+    double targetRPMNear = 670.0;
     double targetFarTPS = (targetRPMFar*TPR)/60;
     double targetNearTPS = (targetRPMNear)*TPR/60;
 
@@ -60,8 +58,6 @@ public class Qual2Teleop extends LinearOpMode {
 
         waitForStart();
         if (isStopRequested()) return;
-
-        //
 
         while (opModeIsActive()) {
 
@@ -274,53 +270,53 @@ public class Qual2Teleop extends LinearOpMode {
         }
 
         // near shoot - automated - 1 ball
-        while (gamepad2.right_trigger > 0.2) {
-            driveTrain();
-            flywheel.setVelocity(targetNearTPS);
-
-            TPS = Math.abs(flywheel.getVelocity());
-            rpm = Math.abs((TPS / TPR) * 60.0);
-
-            telemetry.clear(); // to avoid clogging up drive station
-            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\n \n current TPS: " + TPS + "\nTargetTPS: " + targetNearTPS);
-
-            if (Math.abs(TPS - targetNearTPS) < 40) {
-                intake.setPower(1);
-                transPow = 1;
-                transition.setPower(transPow);//so any ball in the transition doesn't block the ball in the scoop
-                Wait(250);
-                transition.setPower(0);
-                // actually shooting the ball w scoop
-                scoop.setPosition(scoopUpPos);
-                Wait(250);
-                scoop.setPosition(scoopDownPos);
-
-                if (gamepad2.right_trigger < 0.2) {
-                    transPow = -1;
-                    transition.setPower(transPow); //loads next ball
-                    //sleep(3000); //so the cycle doesn't repeat itself too fast
-                    flywheel.setVelocity(0); // stops flywheel
-                    Wait(1500);
-                    transition.setPower(0);
-                    intake.setPower(0);
-                    break;
-                }
-
-                transPow = -1;
-                transition.setPower(transPow); //loads next ball
-                Wait(1750);
-                transition.setPower(0);
-                intake.setPower(0);
-            } else if (TPS - targetNearTPS > 0) {
-                // flywheel too fast
-                flywheel.setVelocity(0);
-                Wait(500);
-                flywheel.setVelocity(targetNearTPS);
-            } else {
-                // flywheel too slow, nothing needed
-                flywheel.setVelocity(targetNearTPS);
-            }
-        }
+//        while (gamepad2.right_trigger > 0.2) {
+//            driveTrain();
+//            flywheel.setVelocity(targetNearTPS);
+//
+//            TPS = Math.abs(flywheel.getVelocity());
+//            rpm = Math.abs((TPS / TPR) * 60.0);
+//
+//            telemetry.clear(); // to avoid clogging up drive station
+//            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\n \n current TPS: " + TPS + "\nTargetTPS: " + targetNearTPS);
+//
+//            if (Math.abs(TPS - targetNearTPS) < 40) {
+//                intake.setPower(1);
+//                transPow = 1;
+//                transition.setPower(transPow);//so any ball in the transition doesn't block the ball in the scoop
+//                Wait(250);
+//                transition.setPower(0);
+//                // actually shooting the ball w scoop
+//                scoop.setPosition(scoopUpPos);
+//                Wait(250);
+//                scoop.setPosition(scoopDownPos);
+//
+//                if (gamepad2.right_trigger < 0.2) {
+//                    transPow = -1;
+//                    transition.setPower(transPow); //loads next ball
+//                    //sleep(3000); //so the cycle doesn't repeat itself too fast
+//                    flywheel.setVelocity(0); // stops flywheel
+//                    Wait(1500);
+//                    transition.setPower(0);
+//                    intake.setPower(0);
+//                    break;
+//                }
+//
+//                transPow = -1;
+//                transition.setPower(transPow); //loads next ball
+//                Wait(1750);
+//                transition.setPower(0);
+//                intake.setPower(0);
+//            } else if (TPS - targetNearTPS > 0) {
+//                // flywheel too fast
+//                flywheel.setVelocity(0);
+//                Wait(500);
+//                flywheel.setVelocity(targetNearTPS);
+//            } else {
+//                // flywheel too slow, nothing needed
+//                flywheel.setVelocity(targetNearTPS);
+//            }
+//        }
 
         // ramp
         if (gamepad2.dpad_up) {
@@ -331,12 +327,12 @@ public class Qual2Teleop extends LinearOpMode {
         if (gamepad2.dpad_left) {
             telemetry.addLine("mid ramp");
             updateTelemetry(telemetry);
-            //ramp.setPosition(rampMidPos);
+            ramp.setPosition(rampMidPos);
         }
         if (gamepad2.dpad_down) {
             telemetry.addLine("low ramp");
             updateTelemetry(telemetry);
-            //ramp.setPosition(rampClosePos);
+            ramp.setPosition(rampClosePos);
         }
     }
 
@@ -360,9 +356,7 @@ public class Qual2Teleop extends LinearOpMode {
         ramp = hardwareMap.get(Servo.class, "ramp");
         intake = hardwareMap.get(CRServo.class, "intake");
         transition = hardwareMap.get(CRServo.class, "transition");
-
     }
-
     private void Wait(double milliseconds) {
         ElapsedTime timer = new ElapsedTime();
         while (opModeIsActive() && timer.milliseconds() < milliseconds) {
