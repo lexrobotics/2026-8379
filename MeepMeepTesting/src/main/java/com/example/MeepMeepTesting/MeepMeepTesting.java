@@ -7,7 +7,6 @@ import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
 import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
-
     // variable initialization
     static double shootingTime = 3;
 

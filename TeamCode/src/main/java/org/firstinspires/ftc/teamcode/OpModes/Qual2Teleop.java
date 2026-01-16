@@ -41,8 +41,10 @@ public class Qual2Teleop extends LinearOpMode {
 
     double targetRPMFar = 1400.0;
     double targetRPMNear = 670.0;
+    double targetRPMMid = 1000.0;
     double targetFarTPS = (targetRPMFar*TPR)/60;
     double targetNearTPS = (targetRPMNear)*TPR/60;
+    double targetMidTPS = (targetRPMMid)*TPR/60;
 
     public void runOpMode() {
 
@@ -103,9 +105,9 @@ public class Qual2Teleop extends LinearOpMode {
         // intake
         if (gamepad2.left_stick_y != 0) {
             if (gamepad2.left_stick_y > 0) {
-                intakePow = -1;
-            } else {
                 intakePow = 1;
+            } else {
+                intakePow = -1;
             }
             intake.setPower(intakePow);
         } else {
@@ -211,6 +213,7 @@ public class Qual2Teleop extends LinearOpMode {
                 Wait(250);
                 scoop.setPosition(scoopDownPos);
 
+                Wait(100);
                 transPow = -1;
                 transition.setPower(transPow); //loads next ball
                 //sleep(3000); //so the cycle doesn't repeat itself too fast
@@ -251,6 +254,7 @@ public class Qual2Teleop extends LinearOpMode {
                 Wait(250);
                 scoop.setPosition(scoopDownPos);
 
+                Wait(100);
                 transPow = -1;
                 transition.setPower(transPow); //loads next ball
                 //sleep(3000); //so the cycle doesn't repeat itself too fast
@@ -266,6 +270,47 @@ public class Qual2Teleop extends LinearOpMode {
             } else {
                 // flywheel too slow, nothing needed
                 flywheel.setVelocity(targetNearTPS);
+            }
+        }
+
+        // mid shoot - automated - 1 ball
+        while (gamepad2.right_trigger > 0.2) {
+            driveTrain();
+            flywheel.setVelocity(targetMidTPS);
+
+            TPS = Math.abs(flywheel.getVelocity());
+            rpm = Math.abs((TPS / TPR) * 60.0);
+
+            telemetry.clear(); // to avoid clogging up drive station
+            telemetry.addLine("flywheel cycle - automated. current RPM: " + rpm + "\n \n current TPS: " + TPS + "\nTargetTPS: " + targetNearTPS);
+
+            if (Math.abs(TPS - targetMidTPS) < 50) {
+                intake.setPower(1);
+                transPow = 1;
+                transition.setPower(transPow);//so any ball in the transition doesn't block the ball in the scoop
+                Wait(250);
+                transition.setPower(0);
+                // actually shooting the ball w scoop
+                scoop.setPosition(scoopUpPos);
+                Wait(250);
+                scoop.setPosition(scoopDownPos);
+
+                Wait(100);
+                transPow = -1;
+                transition.setPower(transPow); //loads next ball
+                //sleep(3000); //so the cycle doesn't repeat itself too fast
+                flywheel.setVelocity(0); // stops flywheel
+                Wait(1500);
+                transition.setPower(0);
+                intake.setPower(0);
+            } else if (TPS - targetMidTPS > 0) {
+                // flywheel too fast
+                flywheel.setVelocity(0);
+                Wait(500);
+                flywheel.setVelocity(targetMidTPS);
+            } else {
+                // flywheel too slow, nothing needed
+                flywheel.setVelocity(targetMidTPS);
             }
         }
 
