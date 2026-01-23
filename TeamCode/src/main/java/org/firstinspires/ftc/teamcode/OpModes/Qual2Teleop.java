@@ -224,7 +224,7 @@ public class Qual2Teleop extends LinearOpMode {
             } else if (TPS - targetFarTPS > 0) {
                 // flywheel too fast
                 flywheel.setVelocity(0);
-                Wait(500);
+                Wait(300);
                 flywheel.setVelocity(targetFarTPS);
             } else {
                 // flywheel too slow, nothing needed

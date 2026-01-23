@@ -66,17 +66,17 @@ public final class MecanumDrive {
         public static final double TICKS_PER_REV = 537.7;
         public static final double GEAR_RATIO = 1.034;
         public static final double WHEEL_RADIUS = 1.97; // inches
-        public double inPerTick = (2 * Math.PI * WHEEL_RADIUS * GEAR_RATIO) / TICKS_PER_REV;
+        public double inPerTick = 1.0; //this is what they said to set it to because of the otos sensor //(2 * Math.PI * WHEEL_RADIUS * GEAR_RATIO) / TICKS_PER_REV;
         public double lateralInPerTick = inPerTick * 1.32;
         public double trackWidthTicks = 12.6 / inPerTick;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.07663;
-        public double kV = 0.016 * inPerTick;
-        public double kA = 0.0018 * inPerTick;
+        public double kS = 1.0239739581926153;
+        public double kV = 0.28516349481646647 * inPerTick;
+        public double kA = 0.025 * inPerTick;
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 50;
+        public double maxWheelVel = 20;
         public double minProfileAccel = -100;
         public double maxProfileAccel = 100;
 
@@ -85,9 +85,9 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.toRadians(60);
 
         // path controller gains for tuning
-        public double axialGain = 8.0;
-        public double lateralGain = 8.0;
-        public double headingGain = 5.0;
+        public double axialGain = 5;//1.75;
+        public double lateralGain = 1.75;
+        public double headingGain = 1.0;
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
@@ -146,7 +146,7 @@ public final class MecanumDrive {
             imu = lazyImu.get();
 
             // TODO: reverse encoders if needed
-            //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
             this.pose = pose;
         }
@@ -233,18 +233,21 @@ public final class MecanumDrive {
 
         // TODO: make sure your config has motors with these names (or change them)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
-        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftBack = hardwareMap.get(DcMotorEx.class, "rightBack");
+        rightBack = hardwareMap.get(DcMotorEx.class, "leftBack");
+        rightFront = hardwareMap.get(DcMotorEx.class, "leftFront");
 
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         // TODO: reverse motor directions if needed
-        //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        //leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // TODO: make sure your config has an IMU with this name (can be BNO or BHI)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
