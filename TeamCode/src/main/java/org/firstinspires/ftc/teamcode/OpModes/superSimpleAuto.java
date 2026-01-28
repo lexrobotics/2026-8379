@@ -25,18 +25,18 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 
 
 @Config
-@Autonomous(name = "Q2BlueNear", group = "Auto")
-public class Q2BlueNear extends LinearOpMode {
+@Autonomous(name = "Q2simple", group = "Auto")
+public class superSimpleAuto extends LinearOpMode {
     //hardware stuff
     CRServo intake;
     CRServo transition;
     Servo scoop;
     Servo ramp;
     DcMotorEx flywheel;
-    //DcMotor leftFront;
-    //DcMotor leftBack;
-    //DcMotor rightBack;
-    //DcMotor rightFront;
+    DcMotor leftFront;
+    DcMotor leftBack;
+    DcMotor rightBack;
+    DcMotor rightFront;
 
 
 
@@ -61,54 +61,38 @@ public class Q2BlueNear extends LinearOpMode {
         //constants
         double shootX = -38.0;
         double shootY = -40.0;
-        double shootAngle = Math.toRadians(240);
+        double shootAngle = Math.toRadians(135);
         double lineupY = -11.0;
         double inOneY = -45.0;
         double inOneX = -12.0;
         double inTwoX = 12.0;
         double inTwoY = -50.0;
-        double delay = 0.2;
 
-        Pose2d beginPose = new Pose2d(-49, 49, Math. toRadians(125));
-
+        Pose2d beginPose = new Pose2d(-49, -49, Math.toRadians(120));
         MecanumDrive drive = new MecanumDrive(hardwareMap, beginPose);
 
-        Pose2d lastPose = beginPose;
+        waitForStart();
+        if (isStopRequested()) return;
+
+        drive.localizer.setPose(beginPose);
+        drive.updatePoseEstimate();
+
 
         waitForStart();
 
         //creating some sort of path
-        Action pewpewpew = drive.actionBuilder(lastPose)
+        Action pewpewpew = drive.actionBuilder(beginPose)
                 //.stopAndAdd(new HungryHippo()) //intake and trans always on
                 .strafeToSplineHeading(new Vector2d(shootX, shootY), shootAngle)//getting into pos
-                .waitSeconds(5)//.stopAndAdd(new MichaelJordan())
-                .strafeToSplineHeading(new Vector2d(inOneX, lineupY), Math.toRadians(90))   //lineup to eat
-                .waitSeconds(delay)
-                .strafeToSplineHeading(new Vector2d(inOneX, inOneY), Math.toRadians(90.00)) //eat
-                .waitSeconds(delay)
-                .strafeToSplineHeading(new Vector2d(shootX, shootY), shootAngle) //shooting second
-                .waitSeconds(5)//.stopAndAdd(new MichaelJordan())
-                .strafeToSplineHeading(new Vector2d(inTwoX, lineupY),  Math.toRadians(90.00)) //lineup to eat
-                .waitSeconds(delay)
-                .strafeToSplineHeading(new Vector2d(inTwoX, inTwoY), Math.toRadians(90)) //eat
-                .waitSeconds(delay)
-                .strafeToSplineHeading(new Vector2d(inTwoX, inOneY),  Math.toRadians(90.00)) //back up a tad
-                .waitSeconds(delay)
-                .strafeToSplineHeading(new Vector2d(shootX, shootY), shootAngle)//shoot third
-                .waitSeconds(5)//.stopAndAdd(new MichaelJordan())
+                //.stopAndAdd(new MichaelJordan())
                 .build();
 
         Actions.runBlocking(new SequentialAction(pewpewpew));
     }
 
     private void setup() {
-        //leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        //leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
-        //rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
-       // rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
         flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
 
-        //leftFront.setDirection(DcMotorEx.Direction.REVERSE);
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setDirection(DcMotorEx.Direction.REVERSE);
 

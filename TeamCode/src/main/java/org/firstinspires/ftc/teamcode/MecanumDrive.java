@@ -86,8 +86,8 @@ public final class MecanumDrive {
 
         // path controller gains for tuning
         public double axialGain = 0.5;//1.75;
-        public double lateralGain = 10;  //x correction
-        public double headingGain = 5.0;
+        public double lateralGain = 1.0;  //x correction
+        public double headingGain = 1.0;
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
@@ -138,10 +138,10 @@ public final class MecanumDrive {
         private Pose2d pose;
 
         public DriveLocalizer(Pose2d pose) {
-            leftFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftFront));
-            leftBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftBack));
-            rightBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightBack));
-            rightFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightFront));
+            leftFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightFront));
+            leftBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightBack));
+            rightBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftBack));
+            rightFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftFront));
 
             imu = lazyImu.get();
 
@@ -238,10 +238,10 @@ public final class MecanumDrive {
         rightBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightFront = hardwareMap.get(DcMotorEx.class, "leftFront");
 
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // TODO: reverse motor directions if needed
         //leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -307,7 +307,18 @@ public final class MecanumDrive {
                 t = Actions.now() - beginTs;
             }
 
-            if (t >= timeTrajectory.duration) {
+            Pose2dDual<Time> txWorldTarget = timeTrajectory.get(t);
+            targetPoseWriter.write(new PoseMessage(txWorldTarget.value()));
+
+            PoseVelocity2d robotVelRobot = updatePoseEstimate();
+
+            Pose2d error = txWorldTarget.value().minusExp(localizer.getPose());
+
+
+            //termination code
+            //Adds a position condition in addition to the time condition
+            //Has a timeout of one sec
+            if ((t >= timeTrajectory.duration && error.position.norm() < 2) || t >= timeTrajectory.duration + 1) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
                 rightBack.setPower(0);
@@ -316,10 +327,6 @@ public final class MecanumDrive {
                 return false;
             }
 
-            Pose2dDual<Time> txWorldTarget = timeTrajectory.get(t);
-            targetPoseWriter.write(new PoseMessage(txWorldTarget.value()));
-
-            PoseVelocity2d robotVelRobot = updatePoseEstimate();
 
             PoseVelocity2dDual<Time> command = new HolonomicController(
                     PARAMS.axialGain, PARAMS.lateralGain, PARAMS.headingGain,
@@ -340,17 +347,16 @@ public final class MecanumDrive {
             mecanumCommandWriter.write(new MecanumCommandMessage(
                     voltage, leftFrontPower, leftBackPower, rightBackPower, rightFrontPower
             ));
-
-            leftFront.setPower(leftFrontPower);
-            leftBack.setPower(leftBackPower);
-            rightBack.setPower(rightBackPower);
-            rightFront.setPower(rightFrontPower);
+            //because we messed up the config names lmao
+            leftFront.setPower(rightFrontPower);
+            leftBack.setPower(rightBackPower);
+            rightBack.setPower(leftBackPower);
+            rightFront.setPower(leftFrontPower);
 
             p.put("x", localizer.getPose().position.x);
             p.put("y", localizer.getPose().position.y);
             p.put("heading (deg)", Math.toDegrees(localizer.getPose().heading.toDouble()));
 
-            Pose2d error = txWorldTarget.value().minusExp(localizer.getPose());
             p.put("xError", error.position.x);
             p.put("yError", error.position.y);
             p.put("headingError (deg)", Math.toDegrees(error.heading.toDouble()));
